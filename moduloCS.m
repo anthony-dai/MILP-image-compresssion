@@ -1,21 +1,9 @@
 close all
 clear all
 
-%% Open dataset
-addpath("mnist_dataset");
-train_data = readmatrix('mnist_train.csv');
-test_data = readmatrix('mnist_test.csv');
- 
-train_labels = train_data(:,1);
-test_labels = test_data(:,1);
-
-train_data = train_data(:,2:end);
-train_data = train_data / 255;
-test_data = test_data(:,2:end);
+%% Load image
+load('test_image.mat')
 %% plot
-k = 3465; % choose this picture
-image_row = train_data(k,:);
-
 % Reshape the row vector into a 28x28 2D array
 image_matrix = reshape(image_row, [28, 28]);
 
@@ -31,7 +19,7 @@ axis image; % Maintain the aspect ratio of the image.
 axis off;   % Turn off the axis.
 
 %% MILP with branch and bound
-sparsity = 784 - sum(train_data(k,:) == 0); % sparsity check
+sparsity = 784 - sum(image_row == 0); % sparsity check
 
 num_A_matrices = 1; % amount of different A matrices to create
 results = zeros(7,784); % store reconstructed vectors for different values of M
@@ -39,8 +27,8 @@ i = 1;
 N = 784;
 for M = [135 200 300 400 500 600 700] % Iterate over these numbers of M for A
     % Projection step
-    [z_all, matrices] = projection_onto_A(num_A_matrices, M, N, train_data);
-    z = z_all(:,k); % Known fractional part
+    [z_all, matrices] = projection_onto_A(num_A_matrices, M, N, image_row);
+    z = z_all(:,1); % Known fractional part
     
     % MILP with branch and bound
     f = [ones(2*N,1);zeros(M,1)]; %x+ and x- and v
@@ -61,11 +49,9 @@ for M = [135 200 300 400 500 600 700] % Iterate over these numbers of M for A
     results(i, :) = x_recon;
     i = i + 1;
     
-    % Plot the current reconstruction with current value for M
-    image_row = x_recon; 
-
+    % Plot the current reconstruction with current value for M 
     % Reshape the row vector into a 28x28 2D array
-    image_matrix = reshape(image_row, [28, 28]);
+    image_matrix = reshape(x_recon, [28, 28]);
 
     % Transpose the matrix to orient the image correctly
     image_matrix = image_matrix';
@@ -83,5 +69,5 @@ end
 %% Calculate MSE for every M
 errors = zeros(1,7);
 for i = 1:7
-    errors(i) = immse(results(i,:)*255, train_data(k,:)*255);
+    errors(i) = immse(results(i,:)*255, image_row*255);
 end
