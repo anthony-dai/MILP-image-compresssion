@@ -1,6 +1,7 @@
 # MILP-image-compresssion
 
 Implementation of the MATLAB code for the branch-and-bound algorithm for image compression.
+Implementation of the python code for the MP, OMP, IHT, CoSAMP
 
 The MATLAB code is specifically only for the branch and bound algorithm and is in moduloCS.m, in which it calls projection_onto_A.m and generate_fat_random_matrix.m
 
